@@ -1,16 +1,18 @@
 const express = require('express');
 const request = require('request');
 const bodyParser = require('body-parser');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const PAGE_ACCESS_TOKEN = // [FACEBOOK TOKEN ACCESS APP];
+const PAGE_ACCESS_TOKEN = 'FACEBOOK_TOKEN_API';
 
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
 	var date = new Date().toString();
-	console.log(`${date}: ${req.method} ${req.url}`);
+	var infoLog = `${date}: ${req.method} ${req.url}`;
+	registerLog('requests.log', infoLog);
 	next();
 });
 
@@ -55,7 +57,8 @@ var receivedMessage = (event) => {
 	var timeOfMessage = event.timestamp;
 	var message = event.message;
 
-	console.log(`Received message for user: ${senderID} and page: ${recipientID} at ${timeOfMessage} with message: ${JSON.stringify(message, 2, undefined)}`);
+	var infoLog = `Received message for user: ${senderID} and page: ${recipientID} at ${timeOfMessage} with message: ${JSON.stringify(message, 2, undefined)}`;
+	registerLog('messages.log', infoLog);
 
 	var messageID = message.mid;
 	var messageText = message.text;
@@ -205,6 +208,20 @@ var isContain = (messageText, keyWord) => {
 	var message = messageText.toLowerCase();
 
 	return message.indexOf(keyWord) > -1;
+}
+
+var registerLog = (fileName, text) => {
+	var textNewLine = `${text} \n`;
+
+	console.log(text);
+	try {
+		fs.appendFile(fileName, textNewLine, (err) => {
+			if(err) throw err;
+			console.log('The "data to append" was appended to file!');
+		});
+	}catch (err) {
+		console.log('The log can\'t be fetch', err);
+	}
 }
 
 app.listen(PORT, () => {
