@@ -81,6 +81,11 @@ var evaluateMessage = (senderID, messageText) => {
 		sendGenericMessage(senderID);
 	}else if(messageText === 'it') {
 		sendImageMessage(senderID);
+	}else if(isContain(messageText, 'hola')) {
+		getProfileInfo(senderID, (userInfo) => {
+			finalMessage = `Hola ${userInfo.first_name}`;
+			sendTextMessage(senderID, finalMessage);
+		});
 	}else if(isContain(messageText, 'clima')) {
 		getWeather((temperature) => {
 			finalMessage = `La temperatura actual es ${temperature}`;
@@ -202,6 +207,22 @@ var getWeather = (callback) => {
 			console.log('Unable fetch weather from api', error);
 		}
 	});
+}
+
+var getProfileInfo = (userID, callback) => {
+	request({
+		uri: `https://graph.facebook.com/v2.6/${userID}`,
+		method: 'GET',
+		qs: {access_token: PAGE_ACCESS_TOKEN},
+		json: true
+	}, (error, response, body) => {
+		if(!error && response.statusCode === 200){
+			callback(body);
+		}else{
+			console.log('Unable get profile info', body.error);
+		}
+	})
+	
 }
 
 var isContain = (messageText, keyWord) => {
