@@ -16,11 +16,11 @@ var getCities = () => {
        if(!error && response.statusCode === 200){
         var data = body;
 
-        var cities = data.map((complejos, index) => {
-          return (`${index + 1}: ${complejos.Nombre}`);
-        });
-        console.log(JSON.stringify(data, undefined, 2));
-        resolve(cities);
+        // var cities = data.map((complejos, index) => {
+        //   return (`${index + 1}: ${complejos.Nombre}`);
+        // });
+        // console.log(JSON.stringify(data, undefined, 2));
+        resolve(data);
       }else{
         reject(`An error ocurr retrieving data from API cinepolis: ${response.statusCode}`);
       }
@@ -70,8 +70,6 @@ var getMovies = (city) => {
       console.log(messageError);
   });
 }
-
-var getMovie
 
 var getMoviesFromCinema = (city, cinemaKey, movieTitle, callback) => {
   var actuallyDate = `/Date(${getDateParse()})/`;
@@ -123,9 +121,16 @@ var getDateParse = () => {
     return Date.parse(`${yearNow}-${monthNow}-${dayNow}`);
 }
 
+var cmd = (city) => {
+  city[0].Complejos.forEach((complejo) => {
+    console.log(complejo.Nombre);
+  });
+}
+
 module.exports = {
   getCities,
   getCinemas,
   getMovies,
-  getMoviesFromCinema
+  getMoviesFromCinema,
+  cmd
 }

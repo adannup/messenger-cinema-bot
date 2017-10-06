@@ -57,4 +57,31 @@ if(command === 'ciudades') {
       console.log('No se encontro la pelicula con el titulo:', argv.titulo);
     }
   })
+}else if(command === undefined){
+  var stdin = process.stdin;
+  var stdout = process.stdout;
+  // stdin.setEncoding('utf8');
+  // stdin.resume();
+
+  cinema.getCities().then((data) => {
+      var cities = data.map((complejos, index) => {
+        return (`${index + 1}: ${complejos.Nombre}`);
+      });
+      console.log(cities);
+      return data;
+  }).then((data) => {
+    // console.log(data);
+    stdout.write('Numero de ciudad: ');
+    stdin.once('data', (res) =>{
+      var ciudad = data.filter((ciudades, index) => {
+        return index == parseInt(res - 1);
+        console.log(index);
+      });
+      cinema.cmd(ciudad);
+    });
+  }).catch((errorMessage) => {
+    console.log(errorMessage);
+  });
+
+  // process.exit();
 }
