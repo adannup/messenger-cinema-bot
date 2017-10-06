@@ -2,31 +2,36 @@ const yargs = require('yargs');
 
 const cinema = require('./cinema/cinema');
 
+const options = {
+  estado: {
+      alias: 'e',
+      demandOption: true,
+      describe: 'Ciudad o Estado',
+      type: 'string'
+    },
+  complejo: {
+    alias: 'c',
+    demandOption: true,
+    describe: 'Nombre del complejo',
+    type: 'string'
+  },
+  titulo: {
+    alias: 't',
+    demandOption: false,
+    describe: 'Titulo de pelicula',
+    type: 'string'
+  } 
+};
+
 const argv = yargs
   .command('ciudades', 'Lista todas las ciudades que cuentan con complejos cinepolis')
   .command('peliculas', 'Lista todas las peliculas', {
-    ciudad: {
-      alias: 'c',
-      demandOption: true,
-      describe: 'Ciudad o Estado',
-      type: 'string'
-    }
+    estado: options.estado
   })
   .command('complejos', 'Muestra los complejos que existen en la ciudad', {
-    ciudad: {
-      alias: 'c',
-      demandOption: true,
-      describe: 'Ciudad o Estado',
-      type: 'string'
-    }
+    estado: options.estado
   })
-  .options({
-    c: {
-      alias: 'ciudad',
-      describe: 'Ciudad o Estado que cuente con complejo cinepolis',
-      type: 'string'
-    }
-  })
+  .command('pelicula', 'Muestra las peliculas de un complejo', options)
   .help()
   .alias('h', 'help')
   .argv
@@ -43,6 +48,13 @@ if(command === 'ciudades') {
   cinema.getCinemas(argv.ciudad);
 }else if(command === 'peliculas') {
   cinema.getMovies(argv.ciudad);
-}else if(command === 'cine'){
-  cinema.getMoviesFromCinema(argv.ciudad, argv.complejo)
+}else if(command === 'pelicula'){
+  console.log(argv.estado, argv.complejo);
+  cinema.getMoviesFromCinema(argv.estado, argv.complejo, argv.titulo, (movies) => {
+    if(movies.length > 0){
+      console.log(movies);
+    }else{
+      console.log('No se encontro la pelicula con el titulo:', argv.titulo);
+    }
+  })
 }

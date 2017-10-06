@@ -1,5 +1,7 @@
-const request = require('request');
 const _ = require('lodash');
+const request = require('request');
+
+const requestCinema = require('./request_cinema');
 
 var getCities = () => {
   return new Promise((resolve, reject) => {
@@ -17,6 +19,7 @@ var getCities = () => {
         var cities = data.map((complejos, index) => {
           return (`${index + 1}: ${complejos.Nombre}`);
         });
+        console.log(JSON.stringify(data, undefined, 2));
         resolve(cities);
       }else{
         reject(`An error ocurr retrieving data from API cinepolis: ${response.statusCode}`);
@@ -68,43 +71,56 @@ var getMovies = (city) => {
   });
 }
 
-var getMoviesFromCinema = (city, cinema) => {
-  var cinemaKey = 'cinepolis-plaza-el-dorado'
+var getMovie
+
+var getMoviesFromCinema = (city, cinemaKey, movieTitle, callback) => {
+  var actuallyDate = `/Date(${getDateParse()})/`;
+ 
+  getDataByCinema(city, cinemaKey, (cinemaData) =>{
+    var moviesData = cinemaData.Dates.filter((dates) => {
+      return dates.FilterDate === actuallyDate;
+    });
+    var movies = [];
+
+    moviesData[0].Movies.forEach(movie => { 
+      if(movieTitle){
+        if(isContain(movie.Key, movieTitle)){
+          console.log('Movie Found', movie.Title);
+          movies.push(movie);
+        }
+      }else{
+        movies.push(movie);
+      }
+    });
+    callback(movies);
+  });
+}
+
+var getDataByCinema = (city, cinemaKey, callback) => {
   requestCinema(city)
     .then((body) => {
-      var moviesData = body.d.Cinemas.filter((cinemas) => {
-        return cinemas.Key === cinemaKey;
+      cinemaMovies = body.d.Cinemas.filter((cinema) => {
+        return cinema.Key === cinemaKey;
       });
-        console.log(moviesData[0]);
+
+      callback(cinemaMovies[0]);
     })
     .catch((messageError) => {
       console.log(messageError);
     });
 }
 
-var requestCinema = (city) => {
-  return new Promise((resolve, reject) => {
-    var encodedCity = city.trim().replace(/\s/g,"-");
+var isContain = ( movieTitle , titleText) => {
+    return movieTitle.indexOf(titleText.toLowerCase()) > -1;
+}
 
-    request({
-      uri:  'http://www.cinepolis.com/Cartelera.aspx/GetNowPlayingByCity',
-      body: {
-        claveCiudad: encodedCity,
-        esVIP: false
-      },
-      method: 'POST',
-      json: true
-    }, (error, response, body) => {
-        if(!error && response.statusCode === 200 && body.d !== null){
-          resolve(body);
-        }else if(body.d === null && response.statusCode === 200){
-          reject('Unable to find that city');
-        }else{
-          reject(`An error ocurr retrieving data from API cinepolis: ${response.statusCode}`);
-        }
-    });
-  });
+var getDateParse = () => {
+    var date = new Date();
+    var dayNow = date.getDate();
+    var monthNow = date.getMonth() + 1;
+    var yearNow = date.getFullYear();
 
+    return Date.parse(`${yearNow}-${monthNow}-${dayNow}`);
 }
 
 module.exports = {
